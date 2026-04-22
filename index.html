@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>RPG Hotel Dashboard</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <header class="top-bar">
+      <div>
+        <p class="eyebrow">RPG Operations</p>
+        <h1 id="hotel-name">Hotel Dashboard</h1>
+      </div>
+      <div class="top-actions">
+        <a class="nav-link" href="/admin">Admin</a>
+        <div class="level-chip" id="hotel-level">Level 1 Adventurer Inn</div>
+      </div>
+    </header>
+
+    <main class="layout">
+      <section class="panel selector-panel">
+        <h2>Select Hotel</h2>
+        <label class="field-label" for="hotel-select">Active Hotel</label>
+        <select id="hotel-select"></select>
+      </section>
+
+      <section class="panel score-panel">
+        <h2>Hotel Reputation</h2>
+        <p class="score-label">Total Points</p>
+        <p class="score-value" id="score-value">0</p>
+        <div class="health-track">
+          <div id="score-meter" class="health-fill"></div>
+        </div>
+        <p class="score-status" id="score-status">Neutral standing</p>
+      </section>
+
+      <section class="panel stats-panel">
+        <h2>Quest Stats</h2>
+        <ul class="stats-list" id="stats-list"></ul>
+      </section>
+
+      <section class="panel controls-panel">
+        <h2>Log Event</h2>
+        <div class="buttons-grid" id="event-buttons"></div>
+      </section>
+
+      <section class="panel timeline-panel">
+        <h2>Adventure Timeline</h2>
+        <ul id="timeline" class="timeline-list"></ul>
+      </section>
+    </main>
+
+    <template id="timeline-item-template">
+      <li class="timeline-item">
+        <div class="event-row">
+          <span class="event-name"></span>
+          <span class="event-points"></span>
+        </div>
+        <p class="event-description"></p>
+        <small class="event-time"></small>
+      </li>
+    </template>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

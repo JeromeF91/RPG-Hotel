@@ -1,0 +1,142 @@
+{
+  "events": [
+    {
+      "id": "event_security_incident",
+      "label": "Security Incident",
+      "description": "A breach or suspicious behavior reduced guest confidence.",
+      "points": -25,
+      "category": "incidents"
+    },
+    {
+      "id": "event_patch_applied",
+      "label": "Vulnerability Patched",
+      "description": "A known vulnerability was fixed by the defense team.",
+      "points": 20,
+      "category": "patches"
+    },
+    {
+      "id": "event_guest_praise",
+      "label": "Guest Praise",
+      "description": "Guests praised service quality and magical amenities.",
+      "points": 15,
+      "category": "praise"
+    },
+    {
+      "id": "event_service_downtime",
+      "label": "Service Downtime",
+      "description": "Core hotel systems went down during peak hours.",
+      "points": -20,
+      "category": "downtime"
+    },
+    {
+      "id": "event_1776872245446_8407",
+      "label": "Backup Verified",
+      "description": "Nightly backup report reviewed",
+      "points": 10,
+      "category": "resilience"
+    }
+  ],
+  "hotels": [
+    {
+      "id": "hotel_grand_wyvern",
+      "name": "Grand Wyvern Hotel",
+      "score": 5,
+      "stats": {
+        "incidents": 1,
+        "patches": 1,
+        "resilience": 1
+      },
+      "eventCounters": {
+        "event_security_incident": 1,
+        "event_patch_applied": 1,
+        "event_1776872245446_8407": 1
+      },
+      "timeline": [
+        {
+          "eventId": "event_1776872245446_8407",
+          "label": "Backup Verified",
+          "description": "Nightly backup report reviewed",
+          "points": 10,
+          "createdAt": "2026-04-22T15:49:25.319Z"
+        },
+        {
+          "eventId": "event_patch_applied",
+          "label": "Vulnerability Patched",
+          "description": "A known vulnerability was fixed by the defense team.",
+          "points": 20,
+          "createdAt": "2026-04-22T15:37:45.783Z"
+        },
+        {
+          "eventId": "event_security_incident",
+          "label": "Security Incident",
+          "description": "A breach or suspicious behavior reduced guest confidence.",
+          "points": -25,
+          "createdAt": "2026-04-22T15:37:38.456Z"
+        }
+      ],
+      "tier": {
+        "label": "Level 1 Adventurer Inn",
+        "mood": "Neutral standing"
+      }
+    },
+    {
+      "id": "hotel_moonspire",
+      "name": "Moonspire Resort",
+      "score": 0,
+      "stats": {},
+      "eventCounters": {},
+      "timeline": []
+    },
+    {
+      "id": "hotel_1776873405632_55106",
+      "name": "Fairmont Banff Spring",
+      "score": 25,
+      "stats": {
+        "praise": 1,
+        "resilience": 1,
+        "patches": 1,
+        "downtime": 1
+      },
+      "eventCounters": {
+        "event_guest_praise": 1,
+        "event_1776872245446_8407": 1,
+        "event_patch_applied": 1,
+        "event_service_downtime": 1
+      },
+      "timeline": [
+        {
+          "eventId": "event_service_downtime",
+          "label": "Service Downtime",
+          "description": "Core hotel systems went down during peak hours.",
+          "points": -20,
+          "createdAt": "2026-04-22T16:03:55.759Z"
+        },
+        {
+          "eventId": "event_patch_applied",
+          "label": "Vulnerability Patched",
+          "description": "A known vulnerability was fixed by the defense team.",
+          "points": 20,
+          "createdAt": "2026-04-22T15:59:21.784Z"
+        },
+        {
+          "eventId": "event_1776872245446_8407",
+          "label": "Backup Verified",
+          "description": "Nightly backup report reviewed",
+          "points": 10,
+          "createdAt": "2026-04-22T15:56:55.951Z"
+        },
+        {
+          "eventId": "event_guest_praise",
+          "label": "Guest Praise",
+          "description": "Guests praised service quality and magical amenities.",
+          "points": 15,
+          "createdAt": "2026-04-22T15:56:54.841Z"
+        }
+      ],
+      "tier": {
+        "label": "Level 1 Adventurer Inn",
+        "mood": "Neutral standing"
+      }
+    }
+  ]
+}

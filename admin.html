@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>RPG Hotel Admin</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <header class="top-bar">
+      <div>
+        <p class="eyebrow">RPG Operations</p>
+        <h1>Admin Console</h1>
+      </div>
+      <div class="top-actions">
+        <a class="nav-link" href="/">Dashboard</a>
+      </div>
+    </header>
+
+    <main class="layout">
+      <section class="panel score-panel">
+        <h2>Add Hotel</h2>
+        <label class="field-label" for="hotel-name-input">Hotel name</label>
+        <input id="hotel-name-input" type="text" placeholder="Azure Keep Suites" />
+        <button class="full" id="add-hotel-btn">Create Hotel</button>
+      </section>
+
+      <section class="panel stats-panel">
+        <h2>Add Event Type</h2>
+        <label class="field-label" for="event-label-input">Event label</label>
+        <input id="event-label-input" type="text" placeholder="Backup Verified" />
+
+        <label class="field-label" for="event-description-input">Description</label>
+        <input id="event-description-input" type="text" placeholder="Nightly backup integrity confirmed." />
+
+        <label class="field-label" for="event-points-input">Points</label>
+        <input id="event-points-input" type="number" placeholder="10" />
+
+        <label class="field-label" for="event-category-input">Category</label>
+        <input id="event-category-input" type="text" placeholder="resilience" />
+        <button class="full" id="add-event-btn">Create Event Type</button>
+      </section>
+
+      <section class="panel controls-panel">
+        <h2>Status</h2>
+        <p id="admin-status">Ready</p>
+      </section>
+
+      <section class="panel timeline-panel">
+        <h2>Hotels</h2>
+        <ul id="hotel-list" class="timeline-list"></ul>
+      </section>
+
+      <section class="panel timeline-panel">
+        <h2>Event Types</h2>
+        <ul id="event-list" class="timeline-list"></ul>
+      </section>
+    </main>
+
+    <script src="./admin.js"></script>
+  </body>
+</html>
