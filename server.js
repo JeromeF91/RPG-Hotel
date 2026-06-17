@@ -68,6 +68,147 @@ function getHotelTier(score) {
   return { label: "Level 3 Legendary Citadel", mood: "Excellent standing" };
 }
 
+const VALID_FREQUENCIES = new Set(["repeatable", "once", "yearly"]);
+
+function normalizeFrequency(value) {
+  const frequency = String(value || "repeatable").trim().toLowerCase();
+  return VALID_FREQUENCIES.has(frequency) ? frequency : "repeatable";
+}
+
+function getEventLogs(hotel, eventId) {
+  return (hotel.timeline || []).filter((log) => log.eventId === eventId);
+}
+
+function getEventAvailability(hotel, eventItem) {
+  const frequency = normalizeFrequency(eventItem.frequency);
+  const logs = getEventLogs(hotel, eventItem.id);
+
+  if (frequency === "repeatable") {
+    return { available: true, frequency };
+  }
+
+  if (frequency === "once") {
+    if (logs.length > 0) {
+      return {
+        available: false,
+        frequency,
+        reason: "Already logged — one-time control.",
+      };
+    }
+    return { available: true, frequency };
+  }
+
+  const year = new Date().getFullYear();
+  const loggedThisYear = logs.some((log) => new Date(log.createdAt).getFullYear() === year);
+  if (loggedThisYear) {
+    return {
+      available: false,
+      frequency,
+      reason: `Already logged in ${year} — available again next year.`,
+      nextEligibleYear: year + 1,
+    };
+  }
+
+  return { available: true, frequency };
+}
+
+const CYBER_INDEX_GRADES = ["E", "D", "C", "B", "A"];
+
+const CYBER_INDEX_POINTS = {
+  A: 40,
+  B: 20,
+  C: 0,
+  D: -20,
+  E: -40,
+};
+
+const CYBER_INDEX_REFRESH_MONTHS = 6;
+
+function normalizeCyberGrade(value) {
+  const grade = String(value || "").trim().toUpperCase();
+  return CYBER_INDEX_GRADES.includes(grade) ? grade : null;
+}
+
+function addMonths(date, months) {
+  const next = new Date(date);
+  next.setMonth(next.getMonth() + months);
+  return next;
+}
+
+function getCyberIndexAvailability(hotel) {
+  const cyberIndex = hotel.cyberIndex || null;
+  if (!cyberIndex?.lastAssessedAt) {
+    return { available: true, grade: cyberIndex?.grade || null };
+  }
+
+  const lastAssessedAt = new Date(cyberIndex.lastAssessedAt);
+  const nextEligibleAt = addMonths(lastAssessedAt, CYBER_INDEX_REFRESH_MONTHS);
+  if (Date.now() >= nextEligibleAt.getTime()) {
+    return {
+      available: true,
+      grade: cyberIndex.grade,
+      lastAssessedAt: cyberIndex.lastAssessedAt,
+      nextEligibleAt: nextEligibleAt.toISOString(),
+    };
+  }
+
+  return {
+    available: false,
+    grade: cyberIndex.grade,
+    lastAssessedAt: cyberIndex.lastAssessedAt,
+    nextEligibleAt: nextEligibleAt.toISOString(),
+    reason: `Next refresh available on ${nextEligibleAt.toLocaleDateString("en-US", {
+      dateStyle: "medium",
+    })}.`,
+  };
+}
+
+function applyCyberIndex(hotel, grade) {
+  const points = CYBER_INDEX_POINTS[grade];
+  const previousPoints = hotel.cyberIndex?.pointsApplied || 0;
+  const assessedAt = new Date().toISOString();
+
+  hotel.score += points - previousPoints;
+  hotel.cyberIndex = {
+    grade,
+    pointsApplied: points,
+    lastAssessedAt: assessedAt,
+    history: [
+      {
+        grade,
+        points,
+        assessedAt,
+      },
+      ...(hotel.cyberIndex?.history || []),
+    ],
+  };
+  hotel.stats = hotel.stats || {};
+  hotel.stats.cyber_index = (hotel.stats.cyber_index || 0) + 1;
+  hotel.timeline.unshift({
+    eventId: "cyber_index",
+    label: `Cyber Index: ${grade}`,
+    description: `Hotel Cyber Index assessed at grade ${grade}.`,
+    points,
+    createdAt: assessedAt,
+  });
+  hotel.tier = getHotelTier(hotel.score);
+}
+
+function parseCreatedAt(value) {
+  if (value === undefined || value === null || value === "") {
+    return new Date().toISOString();
+  }
+
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) {
+    throw new Error("Invalid createdAt date.");
+  }
+  if (parsed.getTime() > Date.now()) {
+    throw new Error("createdAt cannot be in the future.");
+  }
+  return parsed.toISOString();
+}
+
 async function handleApi(req, res, pathname) {
   if (req.method === "GET" && pathname === "/api/store") {
     const store = await readStore();
@@ -87,6 +228,7 @@ async function handleApi(req, res, pathname) {
       stats: {},
       eventCounters: {},
       timeline: [],
+      cyberIndex: null,
     };
     store.hotels.push(nextHotel);
     await writeStore(store);
@@ -123,6 +265,7 @@ async function handleApi(req, res, pathname) {
       description,
       points,
       category: String(body.category || "custom"),
+      frequency: normalizeFrequency(body.frequency),
     };
     store.events.push(nextEvent);
     await writeStore(store);
@@ -132,14 +275,23 @@ async function handleApi(req, res, pathname) {
   if (req.method === "PATCH" && pathname.startsWith("/api/events/")) {
     const eventId = pathname.replace("/api/events/", "");
     const body = await readJsonBody(req);
+    const store = await readStore();
+    const eventItem = store.events.find((item) => item.id === eventId);
+    if (!eventItem) return jsonResponse(res, 404, { error: "Event not found." });
+
+    if (body.frequency !== undefined) {
+      eventItem.frequency = normalizeFrequency(body.frequency);
+    }
+
+    if (body.points === undefined) {
+      await writeStore(store);
+      return jsonResponse(res, 200, { event: eventItem });
+    }
+
     const nextPoints = Number(body.points);
     if (Number.isNaN(nextPoints)) {
       return jsonResponse(res, 400, { error: "A numeric points value is required." });
     }
-
-    const store = await readStore();
-    const eventItem = store.events.find((item) => item.id === eventId);
-    if (!eventItem) return jsonResponse(res, 404, { error: "Event not found." });
 
     const previousPoints = eventItem.points;
     const pointsDelta = nextPoints - previousPoints;
@@ -196,6 +348,18 @@ async function handleApi(req, res, pathname) {
     const eventItem = store.events.find((item) => item.id === eventId);
     if (!eventItem) return jsonResponse(res, 404, { error: "Event not found." });
 
+    const availability = getEventAvailability(hotel, eventItem);
+    if (!availability.available) {
+      return jsonResponse(res, 409, { error: availability.reason || "Event cannot be logged again yet." });
+    }
+
+    let createdAt;
+    try {
+      createdAt = parseCreatedAt(body.createdAt);
+    } catch (error) {
+      return jsonResponse(res, 400, { error: error.message });
+    }
+
     hotel.score += eventItem.points;
     const statKey = eventItem.category || "custom";
     hotel.stats[statKey] = (hotel.stats[statKey] || 0) + 1;
@@ -206,10 +370,35 @@ async function handleApi(req, res, pathname) {
       label: eventItem.label,
       description: eventItem.description,
       points: eventItem.points,
-      createdAt: new Date().toISOString(),
+      createdAt,
     });
     hotel.tier = getHotelTier(hotel.score);
 
+    await writeStore(store);
+    return jsonResponse(res, 200, { hotel });
+  }
+
+  if (req.method === "POST" && pathname === "/api/cyber-index") {
+    const body = await readJsonBody(req);
+    const hotelId = String(body.hotelId || "");
+    const grade = normalizeCyberGrade(body.grade);
+
+    if (!grade) {
+      return jsonResponse(res, 400, { error: "A valid grade (E to A) is required." });
+    }
+
+    const store = await readStore();
+    const hotel = store.hotels.find((item) => item.id === hotelId);
+    if (!hotel) return jsonResponse(res, 404, { error: "Hotel not found." });
+
+    const availability = getCyberIndexAvailability(hotel);
+    if (!availability.available) {
+      return jsonResponse(res, 409, {
+        error: availability.reason || "Cyber Index cannot be refreshed yet.",
+      });
+    }
+
+    applyCyberIndex(hotel, grade);
     await writeStore(store);
     return jsonResponse(res, 200, { hotel });
   }

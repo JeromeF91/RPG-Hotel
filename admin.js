@@ -14,6 +14,7 @@ const eventLabelInput = document.getElementById("event-label-input");
 const eventDescriptionInput = document.getElementById("event-description-input");
 const eventPointsInput = document.getElementById("event-points-input");
 const eventCategoryInput = document.getElementById("event-category-input");
+const eventFrequencyInput = document.getElementById("event-frequency-input");
 const addEventBtn = document.getElementById("add-event-btn");
 
 function setStatus(message, isError = false) {
@@ -54,6 +55,7 @@ async function createEvent() {
   const description = eventDescriptionInput.value.trim();
   const points = Number(eventPointsInput.value);
   const category = eventCategoryInput.value.trim() || "custom";
+  const frequency = eventFrequencyInput.value || "repeatable";
 
   if (!label || !description || Number.isNaN(points)) {
     throw new Error("Event label, description, and numeric points are required.");
@@ -62,13 +64,14 @@ async function createEvent() {
   await api("/api/events", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ label, description, points, category }),
+    body: JSON.stringify({ label, description, points, category, frequency }),
   });
 
   eventLabelInput.value = "";
   eventDescriptionInput.value = "";
   eventPointsInput.value = "";
   eventCategoryInput.value = "";
+  eventFrequencyInput.value = "repeatable";
 }
 
 async function deleteHotel(hotelId) {
@@ -85,6 +88,12 @@ async function updateEventPoints(eventId, points) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ points }),
   });
+}
+
+function formatFrequencyLabel(frequency) {
+  if (frequency === "once") return "One-time";
+  if (frequency === "yearly") return "Yearly";
+  return "Repeatable";
 }
 
 function renderHotels() {
@@ -126,7 +135,7 @@ function renderEvents() {
       </div>
       <p class="event-description">${eventItem.description}</p>
       <div class="event-row">
-        <small class="event-time">Category: ${eventItem.category}</small>
+        <small class="event-time">Category: ${eventItem.category} · ${formatFrequencyLabel(eventItem.frequency)}</small>
         <div class="event-admin-actions">
           <input
             type="number"

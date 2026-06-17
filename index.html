@@ -13,6 +13,9 @@
         <h1 id="hotel-name">Hotel Dashboard</h1>
       </div>
       <div class="top-actions">
+        <button type="button" id="demo-toggle" class="demo-toggle" aria-pressed="false">
+          Demo Mode
+        </button>
         <a class="nav-link" href="/admin">Admin</a>
         <div class="level-chip" id="hotel-level">Level 1 Adventurer Inn</div>
       </div>
@@ -33,6 +36,15 @@
           <div id="score-meter" class="health-fill"></div>
         </div>
         <p class="score-status" id="score-status">Neutral standing</p>
+      </section>
+
+      <section class="panel cyber-index-panel">
+        <h2>Hotel Cyber Index</h2>
+        <p class="score-label">Current Grade</p>
+        <p class="cyber-grade" id="cyber-grade">—</p>
+        <p class="cyber-points" id="cyber-points">Not assessed</p>
+        <p class="cyber-refresh" id="cyber-refresh"></p>
+        <div class="cyber-grade-buttons" id="cyber-grade-buttons"></div>
       </section>
 
       <section class="panel stats-panel">
@@ -61,6 +73,8 @@
         <small class="event-time"></small>
       </li>
     </template>
+
+    <div id="demo-toasts" class="demo-toasts" aria-live="polite"></div>
 
     <script src="./app.js"></script>
   </body>
